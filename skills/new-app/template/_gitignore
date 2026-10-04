@@ -1,0 +1,48 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+.pnpm-debug.log*
+
+# env files: .env.example is the only one committed
+.env*
+!.env.example
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# Supabase's local state.
+/supabase/.temp/
+/supabase/.branches/
+
+# Private JWT signing keys. Never committed: whoever holds these can mint a
+# token PostgREST accepts as any user.
+supabase/signing_keys.json
+
+# Git worktrees agents create to work on a branch in isolation.
+/.claude/worktrees/
+
+# Verification evidence (create-verification-skill): screenshots, snapshots and
+# videos of the running app, which can show people's data.
+/.verify/

@@ -1,0 +1,69 @@
+# The local Supabase stack. Anything not set here takes the CLI's default.
+#
+# Ports are shifted from the CLI defaults (54321…) so this project's stack can
+# run beside other projects' stacks.
+
+project_id = "__APP_SLUG__"
+
+[api]
+enabled = true
+port = __API_PORT__
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = __DB_PORT__
+shadow_port = __SHADOW_PORT__
+major_version = 17
+
+[db.pooler]
+enabled = false
+port = __POOLER_PORT__
+
+[db.migrations]
+enabled = true
+
+# No seed file by default. Domain fixtures are made by scripts through the same
+# rules as the app (scripts/dev-accounts.ts), not by raw SQL.
+[db.seed]
+enabled = false
+
+[realtime]
+enabled = false
+
+[studio]
+enabled = true
+port = __STUDIO_PORT__
+
+# Mailpit: every email the app sends locally lands here.
+[inbucket]
+enabled = true
+port = __MAIL_PORT__
+smtp_port = __SMTP_PORT__
+
+[storage]
+enabled = true
+file_size_limit = "50MiB"
+
+[analytics]
+enabled = false
+
+[edge_runtime]
+enabled = false
+
+# Supabase Auth (GoTrue) is not the app's auth: BetterAuth is. It stays on only
+# because PostgREST verifies tokens against the signing keys configured here,
+# with sign-up closed so nothing can create an identity behind BetterAuth's back.
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+jwt_expiry = 3600
+# The local ES256 key the app signs tokens with (pnpm keys:ensure). Gitignored.
+signing_keys_path = "./signing_keys.json"
+enable_signup = false
+enable_anonymous_sign_ins = false
+
+[auth.email]
+enable_signup = false
+enable_confirmations = false

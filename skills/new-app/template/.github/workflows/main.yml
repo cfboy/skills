@@ -1,0 +1,140 @@
+# What has to be true before a change reaches production, and what happens
+# when it does.
+#
+# One file rather than two because the order matters: migrations land before
+# the code that expects them. A separate deploy workflow could only say "after a
+# push", not "after the checks".
+#
+#   check      lint, format, types, unit tests
+#   security   every RLS assertion, against a database migrated from scratch.
+#              RLS failures do not raise errors — they quietly return rows to the
+#              wrong person — and this is the job that catches them.
+#   migrate    main only: apply supabase/migrations to production
+#   deploy     main only, after migrate: build and ship to Vercel
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "24"
+  # Pinned, not `latest`. The CLI is installed globally on developers' machines
+  # rather than being a dependency here, so nothing else in the repository says
+  # which version its migrations were written against — and a CLI release could
+  # break the pipeline overnight with no commit to point at. Bump it deliberately.
+  SUPABASE_CLI_VERSION: 2.95.4
+
+jobs:
+  check:
+    name: Lint, format, types and tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm format:check
+      - run: pnpm check
+
+  security:
+    name: Row level security
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - uses: supabase/setup-cli@v3
+        with:
+          version: ${{ env.SUPABASE_CLI_VERSION }}
+      - run: pnpm install --frozen-lockfile
+
+      # The signing key is gitignored — it is a private key — so CI makes its
+      # own. It never leaves this runner.
+      - run: pnpm keys:ensure
+      - run: supabase start
+      - run: pnpm env:local
+      - run: pnpm db:rls-check
+
+  migrate:
+    name: Migrations
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [check, security]
+    runs-on: ubuntu-latest
+    # A GitHub environment, so a required reviewer can be added later without
+    # touching this file. Migrations are the irreversible half.
+    environment: production
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - uses: supabase/setup-cli@v3
+        with:
+          version: ${{ env.SUPABASE_CLI_VERSION }}
+      - run: pnpm install --frozen-lockfile
+
+      # `supabase link` parses the whole of supabase/config.toml, which points at
+      # supabase/signing_keys.json — gitignored, so absent on a runner. The key
+      # this writes only satisfies the config parser: `link` and `db push` send
+      # migrations, never configuration, so production's own key is untouched.
+      - run: pnpm keys:ensure
+
+      - name: Push migrations
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          supabase link --project-ref "${{ vars.SUPABASE_PROJECT_REF }}"
+
+          # Say what is about to happen before it happens. A production
+          # migration that fails halfway is read from this log.
+          echo "::group::Migrations that will be applied"
+          supabase db push --dry-run
+          echo "::endgroup::"
+
+          supabase db push
+
+  deploy:
+    name: Deploy
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [migrate]
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      # Variables, not secrets: these name a project, they do not open it.
+      VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v5
+      # `vercel build` builds the way the project builds, which here means pnpm.
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      # Built here rather than by Vercel's Git integration, which vercel.json
+      # turns off for main. Vercel building on push would race the migrations
+      # above: new code could reach production before the columns it reads.
+      - name: Build and deploy
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          npx --yes vercel@latest pull --yes --environment=production --token="$VERCEL_TOKEN"
+          npx --yes vercel@latest build --prod --token="$VERCEL_TOKEN"
+          npx --yes vercel@latest deploy --prebuilt --prod --token="$VERCEL_TOKEN"

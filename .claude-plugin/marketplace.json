@@ -1,0 +1,11 @@
+{
+  "name": "cfboy",
+  "owner": { "name": "cfboy" },
+  "plugins": [
+    {
+      "name": "cfboy-skills",
+      "source": "./",
+      "description": "Start a new full-stack app on a proven stack: Next.js 16, BetterAuth, Supabase with RLS, Drizzle, shadcn/ui, CI to Vercel."
+    }
+  ]
+}
