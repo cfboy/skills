@@ -60,3 +60,7 @@ The template is scaffolded into a fresh directory and must pass, from zero:
 delete, a 404 on someone else's organization, sign-out and a password reset
 through the local mail inbox. Changes to the template should keep all of that
 green.
+
+## License
+
+[MIT](LICENSE).
