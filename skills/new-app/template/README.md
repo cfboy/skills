@@ -34,7 +34,7 @@ pnpm verify        # lint, types, unit tests, and every RLS assertion
 - [docs/architecture.md](docs/architecture.md): the decisions and why.
 - [docs/roadmap.md](docs/roadmap.md): the path from here.
 
-Browser verification lives in `.claude/skills/verify-__APP_SLUG__/` (made with
+Browser verification lives in the `verify-__APP_SLUG__` skill (made with
 the `create-verification-skill` skill); its proof goes to gitignored `.verify/`.
 
 ## Production

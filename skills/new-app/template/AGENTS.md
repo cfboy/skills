@@ -98,7 +98,8 @@ pnpm db:reset       # rebuild the local database from migrations (wipes dev logi
 
 Tests and `pnpm verify` prove the database and the code; they do not prove a
 person can do the thing. That is the project's verification skill,
-`.claude/skills/verify-__APP_SLUG__/`:
+`verify-__APP_SLUG__`, in the project's skills directory (`.agents/skills/`
+for most agents, `.claude/skills/` for Claude Code):
 
 - It is created once with pstack's **`create-verification-skill`**, from this app
   and its dev logins (`pnpm dev:accounts`). It holds the feature map
@@ -107,8 +108,9 @@ person can do the thing. That is the project's verification skill,
   (screenshots, aria snapshots, video) under `.verify/` — gitignored.
 - A change that touches something a person sees is verified with it before
   the PR, and the PR names the `.verify/<run>/` folder.
-- When features change, the owner runs **`/maintain-verification-skill`**
-  (pstack; manual-only) so the map follows the app. Its corrections ship as
+- When features change, the owner invokes **`maintain-verification-skill`**
+  (pstack; manual-only, `/maintain-verification-skill` where agents have
+  slash commands) so the map follows the app. Its corrections ship as
   one PR; a product regression it finds goes to the owner, never into the
   docs. An agent that changes a feature says in its PR that the map needs
   that pass.

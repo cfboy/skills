@@ -1,8 +1,12 @@
 # cfboy/skills
 
 Agent skills for starting and building full-stack web apps on a proven stack.
+They follow the open [Agent Skills](https://agentskills.io) format, so they
+work in any agent that reads skills — Claude Code, Codex, Cursor, Gemini CLI,
+GitHub Copilot, OpenCode and others.
 
-> **ES** — Skills para Claude Code (y otros agentes) que arrancan un proyecto
+> **ES** — Skills para cualquier agente (Claude Code, Codex, Cursor, Gemini CLI,
+> Copilot, OpenCode…) que arrancan un proyecto
 > nuevo, después de entrevistarte sobre su arquitectura, ya verificado: login,
 > organizaciones, RLS probado, CI y deploy.
 
@@ -14,21 +18,27 @@ Agent skills for starting and building full-stack web apps on a proven stack.
 
 ## Install
 
-**Claude Code plugin**
+**Any agent**, with the [skills CLI](https://github.com/vercel-labs/skills). It
+detects the agents you use and asks; `-a` chooses them, `-g` installs for your
+user instead of the project:
+
+```bash
+npx skills add cfboy/skills
+npx skills add cfboy/skills -a codex -a cursor -a gemini-cli   # specific agents
+```
+
+Most agents read project skills from `.agents/skills/`; Claude Code from
+`.claude/skills/`.
+
+**Claude Code plugin**, as an alternative:
 
 ```
 /plugin marketplace add cfboy/skills
 /plugin install cfboy-skills@cfboy
 ```
 
-**Any agent, with [skills](https://github.com/vercel-labs/skills)**
-
-```bash
-npx skills add cfboy/skills
-```
-
-**By hand**: copy `skills/new-app` into `~/.claude/skills/` (every project) or
-`.claude/skills/` (one project).
+**By hand**: copy `skills/new-app` into your agent's skills directory
+(`.agents/skills/` or `.claude/skills/` in a project, or the user-level one).
 
 Then ask: *"start a new app called Agenda Clínica"* — or *"empieza un proyecto
 nuevo"*.
@@ -36,7 +46,9 @@ nuevo"*.
 ## What you need
 
 Node 22+, pnpm 10+, Docker (or Podman) and the Supabase CLI. The skill checks
-for them and says what is missing.
+for them and says what is missing. The generated project's agent instructions
+live in `AGENTS.md`, which Codex, Cursor, Copilot and OpenCode read directly;
+`CLAUDE.md` and `GEMINI.md` point to it.
 
 Browser verification is handed to two skills from Lauren Tan's
 [pstack](https://github.com/cursor/plugins/tree/main/pstack) (MIT):
@@ -45,8 +57,10 @@ Browser verification is handed to two skills from Lauren Tan's
 
 ```bash
 npx skills add cursor/plugins --skill create-verification-skill \
-  --skill maintain-verification-skill -a claude-code
+  --skill maintain-verification-skill
 ```
+
+In Cursor, `/add-plugin pstack` installs the whole stack.
 
 Without them `new-app` still builds and verifies everything else, and says
 what it skipped.

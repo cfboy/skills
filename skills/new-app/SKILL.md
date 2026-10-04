@@ -19,7 +19,9 @@ Before touching the disk, run the interview in
 [references/interview.md](references/interview.md): three short rounds —
 **the shape** (tenancy, accounts, sign-in, device), **the data**
 (sensitivity, roles, language, extras), **the path** (the core flow, the
-entities, when someone real needs it). Use AskUserQuestion when available.
+entities, when someone real needs it). If your agent has a structured
+question tool (AskUserQuestion in Claude Code, for example), use it; otherwise
+ask one numbered message per round.
 Ask only what the user has not already said; state defaults instead of asking
 about them.
 
@@ -42,13 +44,16 @@ And the companion skills from [pstack](https://github.com/cursor/plugins/tree/ma
 (MIT), which this one hands browser verification to:
 
 - **`create-verification-skill`** — inspects the app and writes its
-  project-local verification skill (`.claude/skills/verify-<slug>/`).
+  project-local verification skill (`verify-<slug>`, in the project's skills
+  directory: `.agents/skills/` for most agents, `.claude/skills/` for Claude
+  Code).
 - **`maintain-verification-skill`** — keeps that skill's feature map in step
-  with the app. Manual only: the user runs `/maintain-verification-skill`.
+  with the app. Manual only: the user invokes it (`/maintain-verification-skill`
+  in agents with slash commands).
 
 ```bash
 npx skills add cursor/plugins --skill create-verification-skill \
-  --skill maintain-verification-skill -a claude-code
+  --skill maintain-verification-skill            # add -a <agent> to choose agents
 ```
 
 A missing tool stops the run: say which and how to install it. A missing
@@ -102,7 +107,7 @@ the body.
 Run **`create-verification-skill`** on the new project. It reads the app and the
 dev logins (`owner@example.test`, `member@example.test`,
 `platform@example.test`, password `desarrollo-local`; `pnpm dev:accounts`)
-and creates `.claude/skills/verify-<slug>/` with the feature map and the
+and creates the project's `verify-<slug>` skill with the feature map and the
 drivers. Its first features are the template's: sign-in (and a wrong
 password), the organization's notes (an empty note refused, the member unable
 to delete the owner's note — RLS's refusal surfacing as a toast),
@@ -112,8 +117,8 @@ organization, sign-out, and a password reset through Mailpit
 
 From then on, AGENTS.md tells every agent: a visible change is verified with
 `verify-<slug>` before its PR. Tell the user that when features change they
-run `/maintain-verification-skill` (it is manual-only, and can also run as a
-scheduled cloud agent), so the map follows the app.
+invoke `maintain-verification-skill` (it is manual-only, and can also run as
+a scheduled background agent), so the map follows the app.
 
 Tell the user `pnpm dev` serves http://localhost:3000 and which login to try.
 
@@ -126,8 +131,8 @@ Tell the user `pnpm dev` serves http://localhost:3000 and which login to try.
 2. **M1, the domain** — "Adding a table" in the project's AGENTS.md, once per
    entity. Keep `note` until the first real table and its RLS assertions pass,
    then remove it (schema, policies, assertions, `actions/notes.ts`,
-   `lib/schemas/notes.ts`, `components/notes/`) and ask the user to run
-   `/maintain-verification-skill` so the verification map follows. Before
+   `lib/schemas/notes.ts`, `components/notes/`) and ask the user to invoke
+   `maintain-verification-skill` so the verification map follows. Before
    the first production deploy it is fine to regenerate `supabase/migrations/`
    from scratch, carrying over the identity and BetterAuth sections of the
    behaviour migration; after it, only new migrations.

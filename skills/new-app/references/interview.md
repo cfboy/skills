@@ -2,9 +2,11 @@
 
 Ask before scaffolding. The answers choose the scaffold flags, the changes
 applied right after it, and the first version of `docs/architecture.md` and
-`docs/roadmap.md`. Use the AskUserQuestion tool when it is available (up to
-four questions per call, two to four options each, recommended option first);
-otherwise ask in one numbered message per round. Skip anything the user
+`docs/roadmap.md`. If your agent has a structured question tool (AskUserQuestion in
+Claude Code, for example), use it: a few questions per call, two to four
+options each, the recommended option first. Otherwise ask one numbered
+message per round, with the options and the recommendation under each
+question. Skip anything the user
 already said. Never ask what you can decide from a sensible default — state
 the default instead.
 

@@ -52,5 +52,5 @@ Route Handler that checks `orgScope`, and serve with signed URLs.
 ## A skill to drive the app
 
 Once the app has real flows, give it a project skill under
-`.claude/skills/verify-<app>/` that starts it, signs in as each dev role and
+`verify-<app>` (in `.agents/skills/` or your agent's skills directory) that starts it, signs in as each dev role and
 walks the flows that matter with Playwright, saving screenshots as evidence.
