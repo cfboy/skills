@@ -45,25 +45,27 @@ nuevo"*.
 
 ## What you need
 
-Node 22+, pnpm 10+, Docker (or Podman) and the Supabase CLI. The skill checks
-for them and says what is missing. The generated project's agent instructions
-live in `AGENTS.md`, which Codex, Cursor, Copilot and OpenCode read directly;
-`CLAUDE.md` and `GEMINI.md` point to it.
+Only Node 22+. The skill prepares the rest itself (`scripts/doctor.mjs --fix`):
+it installs pnpm, starts Docker or Podman if they are stopped, and installs
+the verification skills. What needs an administrator — installing a container
+runtime — it asks you before running. The Supabase CLI is a dependency of
+each generated project, and Mailpit (the local inbox for emails) comes with
+the Supabase stack.
 
 Browser verification is handed to two skills from Lauren Tan's
 [pstack](https://github.com/cursor/plugins/tree/main/pstack) (MIT):
 `create-verification-skill` writes the project's `verify-<app>` skill, and
-`maintain-verification-skill` keeps its feature map in step with the app.
+`maintain-verification-skill` keeps its feature map in step with the app. The
+doctor installs them; by hand:
 
 ```bash
 npx skills add cursor/plugins --skill create-verification-skill \
   --skill maintain-verification-skill
 ```
 
-In Cursor, `/add-plugin pstack` installs the whole stack.
-
-Without them `new-app` still builds and verifies everything else, and says
-what it skipped.
+In Cursor, `/add-plugin pstack` installs the whole stack. The generated
+project's agent instructions live in `AGENTS.md`, which Codex, Cursor, Copilot
+and OpenCode read directly; `CLAUDE.md` and `GEMINI.md` point to it.
 
 ## How it was tested
 

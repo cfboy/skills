@@ -4,8 +4,8 @@ __APP_DESCRIPTION__
 
 ## Running it locally
 
-Requires Node 24, pnpm, Docker (or Podman) and the
-[Supabase CLI](https://supabase.com/docs/guides/local-development/cli/getting-started).
+Requires Node 22+, pnpm and Docker or Podman. The Supabase CLI is a dev
+dependency (pinned in `package.json`); Mailpit comes with its local stack.
 
 ```bash
 pnpm install

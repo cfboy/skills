@@ -31,34 +31,41 @@ Also settle the basics: the **name** people see, a **slug**
 
 Read the answers back in a few lines and get a yes before scaffolding.
 
-## 2. Check the tools
+## 2. Prepare the machine
+
+Do this yourself; the user should not have to install anything by hand.
 
 ```bash
-node -v      # 22+ (CI uses 24)
-pnpm -v      # 10+
-docker info  # or podman: the Supabase CLI needs a container runtime
-supabase -v  # https://supabase.com/docs/guides/local-development/cli/getting-started
+node <this-skill>/scripts/doctor.mjs --fix
 ```
 
-And the companion skills from [pstack](https://github.com/cursor/plugins/tree/main/pstack)
-(MIT), which this one hands browser verification to:
+It checks Node 22+, git, pnpm and a container runtime, and with `--fix`:
 
-- **`create-verification-skill`** — inspects the app and writes its
-  project-local verification skill (`verify-<slug>`, in the project's skills
-  directory: `.agents/skills/` for most agents, `.claude/skills/` for Claude
-  Code).
-- **`maintain-verification-skill`** — keeps that skill's feature map in step
-  with the app. Manual only: the user invokes it (`/maintain-verification-skill`
-  in agents with slash commands).
+- installs **pnpm** (corepack, else npm);
+- starts a **Docker** (Desktop, OrbStack, Colima) or **Podman** that is
+  installed but stopped — Podman works the same as Docker here;
+- installs the companion verification skills from
+  [pstack](https://github.com/cursor/plugins/tree/main/pstack) (MIT) for the
+  user: **`create-verification-skill`**, which writes the project's
+  `verify-<slug>` skill, and **`maintain-verification-skill`**, which keeps it
+  in step with the app (manual-only: the user invokes it,
+  `/maintain-verification-skill` where agents have slash commands). Newly
+  installed skills load when the agent restarts; until then, read their
+  `SKILL.md` and follow it.
 
-```bash
-npx skills add cursor/plugins --skill create-verification-skill \
-  --skill maintain-verification-skill            # add -a <agent> to choose agents
-```
+What needs an administrator — installing Node, git or a container runtime,
+starting Docker on Linux — it prints as one command marked *ask the user*.
+Ask, run it once they agree, and run the doctor again. No Docker or Podman at
+all: recommend what the doctor prints (OrbStack or Podman on a Mac, Podman
+Desktop on Windows, Podman on Linux).
 
-A missing tool stops the run: say which and how to install it. A missing
-companion skill does not: build and verify everything else, skip step 6, and
-tell the user what was skipped and why.
+Not needed on the machine: the **Supabase CLI** is a dev dependency of every
+generated project, pinned in its `package.json`; **Mailpit**, the local inbox
+that catches invitation and password-reset emails, comes with the Supabase
+stack.
+
+If the verification skills cannot be installed, carry on: build and verify
+everything else, skip step 6, and tell the user what was skipped.
 
 ## 3. Scaffold
 
@@ -159,4 +166,5 @@ When the roadmap reaches it, walk the user through
 | Sign-in returns 429 | BetterAuth's rate limit (3 per 10 s), on in production builds. Wait. |
 | `port is already allocated` | Another Supabase stack: re-scaffold with another `--port-offset`, or stop it. |
 | Image pulls fail behind a proxy | `SUPABASE_INTERNAL_IMAGE_REGISTRY=docker.io pnpm db:start`. |
-| Podman instead of Docker | `scripts/supabase.sh` finds Podman's socket by itself. |
+| Podman instead of Docker | Works as is: `scripts/supabase.sh` finds Podman's socket (machine on macOS/Windows, `podman.socket` on Linux). |
+| Containers stopped | `node <this-skill>/scripts/doctor.mjs --fix` starts them. |
